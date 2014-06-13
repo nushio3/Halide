@@ -17,6 +17,7 @@
 #include "Lower.h"
 #include "StmtCompiler.h"
 #include "CodeGen_C.h"
+#include "CodeGen_PTX_Dev.h"
 #include "Image.h"
 #include "Param.h"
 #include "Debug.h"
@@ -1681,6 +1682,29 @@ void Func::compile_to_c(const string &filename, vector<Argument> args, const str
     CodeGen_C cg(src);
     cg.compile(lowered, fn_name.empty() ? name() : fn_name, args, images_to_embed);
 }
+
+void Func::compile_to_ptx(const string &filename, vector<Argument> args, const string &fn_name) {
+    if (!lowered.defined()) {
+        lowered = Halide::Internal::lower(func, get_host_target());
+    }
+
+    vector<Buffer> images_to_embed;
+    validate_arguments(name(), args, lowered, images_to_embed);
+
+    for (int i = 0; i < outputs(); i++) {
+        args.push_back(output_buffers()[i]);
+    }
+
+    ofstream src(filename.c_str());
+    Target tgt(Target::Linux,Target::X86,64,Target::CUDA);
+    CodeGen_PTX_Dev cg(tgt);
+    cg.add_kernel(lowered,fn_name.empty() ? name() : fn_name, args);
+    cg.init_module();
+    vector<char> ret=cg.compile_to_src();
+    for(size_t i =0;i<ret.size();++i)
+      src << ret[i];
+}
+
 
 void Func::compile_to_lowered_stmt(const string &filename) {
     if (!lowered.defined()) {

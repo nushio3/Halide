@@ -521,6 +521,9 @@ public:
      * will produce serial code. */
     EXPORT void compile_to_c(const std::string &filename, std::vector<Argument>, const std::string &fn_name = "");
 
+    /* compile to ptx */
+    EXPORT void compile_to_ptx(const std::string &filename, std::vector<Argument>, const std::string &fn_name = "");
+
     /** Write out an internal representation of lowered code. Useful
      * for analyzing and debugging scheduling. Canonical extension is
      * .stmt, which must be supplied in filename. */

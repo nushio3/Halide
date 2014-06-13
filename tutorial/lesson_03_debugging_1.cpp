@@ -28,11 +28,11 @@ int main(int argc, char **argv) {
     // name for debugging purposes.
     Func gradient("gradient");
     Var x("x"), y("y");
-    gradient(x, y) = x + y;
+    gradient(x, y) = x * (y + 42.0f) + 42.195f;
 
     // Realize the function to produce an output image. We'll keep it
     // very small for this lesson.
-    Image<int> output = gradient.realize(8, 8);
+    Image<float> output = gradient.realize(8, 8);
 
     // That line compiled and ran the pipeline. Try running this
     // lesson with the environment variable HL_DEBUG_CODEGEN set to
@@ -54,7 +54,22 @@ int main(int argc, char **argv) {
     // name of the generated function. Have a look inside gradient.cpp
     // after compiling and running this lesson.
     gradient.compile_to_c("gradient.cpp", std::vector<Argument>(), "gradient");
-
+    gradient.compile_to_assembly("gradient.s", std::vector<Argument>(), "gradient");
+    gradient.compile_to_bitcode("gradient.bc", std::vector<Argument>(), "gradient");
+    gradient.compile_to_lowered_stmt("gradient.stmt");
+    gradient.compile_to_ptx("gradient.ptx",std::vector<Argument>(), "gradient");
+    
+//    {
+//      std::vector<Argument> args;
+//      for (int i = 0; i < outputs(); i++) {
+//        args.push_back(output_buffers()[i]);
+//      }
+//
+//      ofstream src("gradient.ptx");
+//      CodeGen_PTX cgptx(src);
+//      cg.compile(gradient.lowered, "gradient");
+//
+//	}
     // Using these two tricks -- setting HL_DEBUG_CODEGEN and calling
     // compile_to_c -- you can usually figure out what code Halide is
     // generating. In the next lesson we'll see how to snoop on Halide
